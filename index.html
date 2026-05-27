@@ -675,6 +675,7 @@ function addProducto() {
   productos.push({id:nextId++, d:document.getElementById('np-destino').value, n:n.toUpperCase(), r:document.getElementById('np-ref').value.trim(), c:document.getElementById('np-color').value});
   document.getElementById('np-nombre').value='';
   document.getElementById('np-ref').value='';
+  guardarProductos();
   renderProductos();
 }
 function startEdit(id) { editId=id; renderProductos(); }
@@ -685,21 +686,37 @@ function saveEdit(id) {
   p.r=document.getElementById('e-r').value.trim();
   p.d=document.getElementById('e-d').value;
   p.c=document.getElementById('e-c').value;
-  editId=null; renderProductos(); renderProdLista();
+  editId=null; guardarProductos(); renderProductos(); renderProdLista();
 }
 function dupProd(id) {
   const p=productos.find(x=>x.id===id);
   productos.push({id:nextId++,d:p.d,n:p.n+' (copia)',r:p.r,c:p.c||'#ffffff'});
+  guardarProductos();
   renderProductos(); renderProdLista();
 }
 function delProd(id) {
   if(!confirm('¿Eliminar este producto?')) return;
   productos=productos.filter(p=>p.id!==id);
   if(selId===id){selId=null;preview();}
+  guardarProductos();
   renderProductos(); renderProdLista();
 }
 
+// PERSISTENCIA — guardar y cargar productos en localStorage
+function guardarProductos() {
+  try { localStorage.setItem('palets_productos', JSON.stringify(productos)); localStorage.setItem('palets_nextId', nextId); } catch(e) {}
+}
+function cargarProductos() {
+  try {
+    const saved = localStorage.getItem('palets_productos');
+    const savedId = localStorage.getItem('palets_nextId');
+    if (saved) { productos = JSON.parse(saved); }
+    if (savedId) { nextId = parseInt(savedId); }
+  } catch(e) {}
+}
+
 // INIT
+cargarProductos();
 renderProdLista();
 preview();
 // Escalar preview después de que el DOM esté pintado
